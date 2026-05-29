@@ -1,0 +1,247 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { DataTable } from "@/components/ui/data-table";
+import { FilterBar } from "@/components/ui/filter-bar";
+import { InsightPanel } from "@/components/ui/insight-panel";
+import { MetricCard } from "@/components/ui/metric-card";
+import {
+  ScenarioField,
+  SelectInput,
+  TextInput
+} from "@/components/ui/scenario-input";
+import {
+  scorePrimaryBanking,
+  syntheticCustomers,
+  type SyntheticCustomer
+} from "@/lib/depositiq/prototype";
+
+export function PrimaryBankingWorkbench() {
+  const [segmentFilter, setSegmentFilter] = useState("All");
+  const [scoreRangeFilter, setScoreRangeFilter] = useState("All");
+  const [salaryFilter, setSalaryFilter] = useState("All");
+  const [payIdFilter, setPayIdFilter] = useState("All");
+  const [walletFilter, setWalletFilter] = useState("All");
+
+  const customers = useMemo(() => syntheticCustomers.map(scorePrimaryBanking), []);
+  const filteredCustomers = customers.filter((customer) => {
+    if (segmentFilter !== "All" && customer.segment !== segmentFilter) return false;
+    if (salaryFilter !== "All" && String(customer.salaryCredit) !== salaryFilter) return false;
+    if (payIdFilter !== "All" && String(customer.payIdRegistered) !== payIdFilter) return false;
+    if (walletFilter !== "All" && String(customer.walletProvisioned) !== walletFilter) return false;
+    if (scoreRangeFilter === "75+" && customer.primaryBankingScore < 75) return false;
+    if (scoreRangeFilter === "50-74" && (customer.primaryBankingScore < 50 || customer.primaryBankingScore > 74)) return false;
+    if (scoreRangeFilter === "<50" && customer.primaryBankingScore >= 50) return false;
+    return true;
+  });
+
+  const [sampleCustomer, setSampleCustomer] = useState<SyntheticCustomer>(syntheticCustomers[0]);
+  const beforeScore = scorePrimaryBanking(syntheticCustomers[0]);
+  const afterScore = scorePrimaryBanking(sampleCustomer);
+
+  return (
+    <div className="space-y-6">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="Primary relationships"
+          value={String(customers.filter((customer) => customer.relationshipBand === "Primary relationship").length)}
+        />
+        <MetricCard
+          label="Emerging primary"
+          value={String(customers.filter((customer) => customer.relationshipBand === "Emerging primary").length)}
+        />
+        <MetricCard
+          label="Secondary relationship"
+          value={String(customers.filter((customer) => customer.relationshipBand === "Secondary relationship").length)}
+        />
+        <MetricCard
+          label="Rate chaser / low engagement"
+          value={String(customers.filter((customer) => customer.relationshipBand === "Rate chaser / low engagement").length)}
+        />
+      </section>
+
+      <FilterBar>
+        <SelectInput value={segmentFilter} onChange={(event) => setSegmentFilter(event.target.value)}>
+          <option>All</option>
+          <option>Mass market</option>
+          <option>Affluent</option>
+          <option>Digital first</option>
+          <option>Young saver</option>
+        </SelectInput>
+        <SelectInput value={scoreRangeFilter} onChange={(event) => setScoreRangeFilter(event.target.value)}>
+          <option>All</option>
+          <option>75+</option>
+          <option>50-74</option>
+          <option>&lt;50</option>
+        </SelectInput>
+        <BooleanFilter value={salaryFilter} onChange={setSalaryFilter} label="Salary credit" />
+        <BooleanFilter value={payIdFilter} onChange={setPayIdFilter} label="PayID registered" />
+        <BooleanFilter value={walletFilter} onChange={setWalletFilter} label="Wallet provisioned" />
+      </FilterBar>
+
+      <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+        <DataTable
+          columns={[
+            {
+              key: "customer",
+              label: "Customer",
+              render: (row: (typeof filteredCustomers)[number]) => (
+                <div>
+                  <p className="font-medium text-slate-900">{row.name}</p>
+                  <p className="text-slate-500">{row.segment}</p>
+                </div>
+              )
+            },
+            {
+              key: "score",
+              label: "Primary banking score",
+              render: (row: (typeof filteredCustomers)[number]) => row.primaryBankingScore
+            },
+            {
+              key: "band",
+              label: "Relationship band",
+              render: (row: (typeof filteredCustomers)[number]) => (
+                <Badge
+                  tone={
+                    row.relationshipBand === "Primary relationship"
+                      ? "success"
+                      : row.relationshipBand === "Emerging primary"
+                        ? "info"
+                        : row.relationshipBand === "Secondary relationship"
+                          ? "warning"
+                          : "danger"
+                  }
+                >
+                  {row.relationshipBand}
+                </Badge>
+              )
+            },
+            {
+              key: "signals",
+              label: "Signals",
+              render: (row: (typeof filteredCustomers)[number]) => (
+                <div className="text-slate-500">
+                  Salary credit: {row.salaryCredit ? "Yes" : "No"}
+                  <br />
+                  PayID: {row.payIdRegistered ? "Yes" : "No"}
+                  <br />
+                  Wallet: {row.walletProvisioned ? "Yes" : "No"}
+                </div>
+              )
+            },
+            {
+              key: "action",
+              label: "Next-best action",
+              render: (row: (typeof filteredCustomers)[number]) => (
+                <span className="font-medium text-slate-900">{row.nextBestAction}</span>
+              )
+            }
+          ]}
+          rows={filteredCustomers}
+        />
+
+        <div className="space-y-6">
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-lg font-semibold text-slate-950">What-if panel</p>
+            <p className="mt-2 text-sm text-slate-500">
+              Toggle primacy levers for a sample customer and the score updates live.
+            </p>
+            <div className="mt-5 grid gap-4">
+              <ScenarioField label="Salary credit">
+                <SelectInput
+                  value={String(sampleCustomer.salaryCredit)}
+                  onChange={(event) =>
+                    setSampleCustomer((current) => ({
+                      ...current,
+                      salaryCredit: event.target.value === "true"
+                    }))
+                  }
+                >
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </SelectInput>
+              </ScenarioField>
+              <ScenarioField label="PayID registered">
+                <SelectInput
+                  value={String(sampleCustomer.payIdRegistered)}
+                  onChange={(event) =>
+                    setSampleCustomer((current) => ({
+                      ...current,
+                      payIdRegistered: event.target.value === "true"
+                    }))
+                  }
+                >
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </SelectInput>
+              </ScenarioField>
+              <ScenarioField label="Wallet provisioned">
+                <SelectInput
+                  value={String(sampleCustomer.walletProvisioned)}
+                  onChange={(event) =>
+                    setSampleCustomer((current) => ({
+                      ...current,
+                      walletProvisioned: event.target.value === "true"
+                    }))
+                  }
+                >
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </SelectInput>
+              </ScenarioField>
+              <ScenarioField label="Card usage per month">
+                <TextInput
+                  type="number"
+                  value={String(sampleCustomer.cardUsagePerMonth)}
+                  onChange={(event) =>
+                    setSampleCustomer((current) => ({
+                      ...current,
+                      cardUsagePerMonth: Number(event.target.value)
+                    }))
+                  }
+                />
+              </ScenarioField>
+            </div>
+          </section>
+
+          <InsightPanel title="Before / after score">
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-semibold text-slate-500">Before</p>
+                <p className="mt-2 text-3xl font-semibold text-slate-950">
+                  {beforeScore.primaryBankingScore}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-semibold text-slate-500">After</p>
+                <p className="mt-2 text-3xl font-semibold text-slate-950">
+                  {afterScore.primaryBankingScore}
+                </p>
+              </div>
+            </div>
+            <p className="mt-4">{afterScore.nextBestAction}</p>
+          </InsightPanel>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function BooleanFilter({
+  value,
+  onChange,
+  label
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  label: string;
+}) {
+  return (
+    <SelectInput value={value} onChange={(event) => onChange(event.target.value)}>
+      <option>All</option>
+      <option value="true">{label}: Yes</option>
+      <option value="false">{label}: No</option>
+    </SelectInput>
+  );
+}

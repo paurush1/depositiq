@@ -1,0 +1,144 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { DataTable } from "@/components/ui/data-table";
+import { InsightPanel } from "@/components/ui/insight-panel";
+import { MetricCard } from "@/components/ui/metric-card";
+import { ScenarioField, TextInput } from "@/components/ui/scenario-input";
+import {
+  defaultPrioritisationWeights,
+  rankInitiatives,
+  type PrioritisationWeights
+} from "@/lib/depositiq/prototype";
+
+export function PrioritisationWorkbench() {
+  const [weights, setWeights] = useState<PrioritisationWeights>(defaultPrioritisationWeights);
+  const ranked = useMemo(() => rankInitiatives(weights), [weights]);
+  const topThree = ranked.slice(0, 3);
+
+  function setWeight(key: keyof PrioritisationWeights, value: string) {
+    setWeights((current) => ({
+      ...current,
+      [key]: Number(value)
+    }));
+  }
+
+  return (
+    <div className="space-y-6">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <MetricCard label="Top initiative score" value={ranked[0].priorityScore.toFixed(2)} />
+        <MetricCard label="Top 3 initiatives" value={topThree.map((item) => item.name).join(", ")} />
+        <MetricCard label="Highest market pressure" value={String(Math.max(...ranked.map((item) => item.marketPressure)))} />
+        <MetricCard label="Highest risk reduction" value={String(Math.max(...ranked.map((item) => item.riskReduction)))} />
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <WeightInput label="Commercial value weight" value={weights.commercialValue} onChange={(value) => setWeight("commercialValue", value)} />
+        <WeightInput label="Customer value weight" value={weights.customerValue} onChange={(value) => setWeight("customerValue", value)} />
+        <WeightInput label="Risk reduction weight" value={weights.riskReduction} onChange={(value) => setWeight("riskReduction", value)} />
+        <WeightInput label="Strategic fit weight" value={weights.strategicFit} onChange={(value) => setWeight("strategicFit", value)} />
+        <WeightInput label="Market pressure weight" value={weights.marketPressure} onChange={(value) => setWeight("marketPressure", value)} />
+        <WeightInput label="Primacy uplift weight" value={weights.primacyUplift} onChange={(value) => setWeight("primacyUplift", value)} />
+        <WeightInput label="Effort penalty" value={weights.effortPenalty} onChange={(value) => setWeight("effortPenalty", value)} />
+        <WeightInput label="Dependency penalty" value={weights.dependencyPenalty} onChange={(value) => setWeight("dependencyPenalty", value)} />
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <DataTable
+          columns={[
+            {
+              key: "initiative",
+              label: "Initiative",
+              render: (row: (typeof ranked)[number]) => (
+                <div>
+                  <p className="font-medium text-slate-900">{row.name}</p>
+                  <p className="text-slate-500">{row.expectedMetricImpact}</p>
+                </div>
+              )
+            },
+            {
+              key: "score",
+              label: "Ranked score",
+              render: (row: (typeof ranked)[number]) => row.priorityScore.toFixed(2)
+            },
+            {
+              key: "deliveryRisk",
+              label: "Delivery risk",
+              render: (row: (typeof ranked)[number]) => (
+                <Badge
+                  tone={
+                    row.deliveryRisk === "High"
+                      ? "danger"
+                      : row.deliveryRisk === "Medium"
+                        ? "warning"
+                        : "success"
+                  }
+                >
+                  {row.deliveryRisk}
+                </Badge>
+              )
+            },
+            {
+              key: "stakeholders",
+              label: "Key stakeholders",
+              render: (row: (typeof ranked)[number]) => row.keyStakeholders
+            }
+          ]}
+          rows={ranked}
+        />
+
+        <div className="space-y-6">
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-lg font-semibold text-slate-950">Top 3 initiatives</p>
+            <div className="mt-5 space-y-4">
+              {topThree.map((initiative, index) => (
+                <div key={initiative.id} className="rounded-2xl bg-slate-50 p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold text-slate-900">
+                      {index + 1}. {initiative.name}
+                    </p>
+                    <Badge tone="info">{initiative.priorityScore.toFixed(2)}</Badge>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-600">{initiative.whyNow}</p>
+                  <p className="mt-2 text-sm text-slate-500">
+                    Suggested experiment: {initiative.suggestedExperiment}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <InsightPanel title="Why now">
+            <div className="space-y-4">
+              <p>{topThree[0].whyNow}</p>
+              <p>Expected metric impact: {topThree[0].expectedMetricImpact}</p>
+              <p>Key stakeholders: {topThree[0].keyStakeholders}</p>
+              <p>Delivery risk: {topThree[0].deliveryRisk}</p>
+              <p className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                Prioritisation should be reviewed with Product, Technology, Risk,
+                Operations, Finance, Treasury and Distribution.
+              </p>
+            </div>
+          </InsightPanel>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function WeightInput({
+  label,
+  value,
+  onChange
+}: {
+  label: string;
+  value: number;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <ScenarioField label={label}>
+      <TextInput type="number" step="0.1" value={String(value)} onChange={(event) => onChange(event.target.value)} />
+    </ScenarioField>
+  );
+}

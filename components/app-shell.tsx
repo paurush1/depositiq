@@ -85,7 +85,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           </header>
 
-          <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+          <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8 xl:py-10">{children}</main>
 
           <footer className="border-t border-slate-200 bg-white/80 px-4 py-5 text-sm text-slate-500 sm:px-6 lg:px-8">
             DepositIQ is a portfolio product prototype. It uses public product reference

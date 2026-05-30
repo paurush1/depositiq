@@ -1,11 +1,12 @@
 import { OverviewDashboard } from "@/components/overview-dashboard";
 import { ButtonLink } from "@/components/ui/button";
+import { PageContainer } from "@/components/ui/page-layout";
 
 export default function HomePage() {
   return (
-    <div className="space-y-8">
+    <PageContainer className="gap-8">
       <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-[linear-gradient(135deg,#0f172a_0%,#0b3b63_45%,#dceffd_100%)] shadow-[0_30px_80px_rgba(15,23,42,0.18)]">
-        <div className="px-6 py-8 lg:px-10 lg:py-10">
+        <div className="px-6 py-8 lg:px-10 lg:py-12">
           <div className="max-w-5xl">
             <p className="text-sm font-semibold text-sky-200">DepositIQ</p>
             <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
@@ -27,7 +28,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="mt-10 grid gap-4 lg:grid-cols-4">
+          <div className="mt-12 grid gap-4 lg:grid-cols-4">
             <div className="rounded-3xl border border-white/15 bg-white/10 p-5 text-white backdrop-blur">
               <p className="text-sm text-sky-100">Market context</p>
               <p className="mt-3 text-3xl font-semibold">RBA + CDR</p>
@@ -61,6 +62,6 @@ export default function HomePage() {
       </section>
 
       <OverviewDashboard />
-    </div>
+    </PageContainer>
   );
 }

@@ -7,6 +7,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { InsightPanel } from "@/components/ui/insight-panel";
 import { MetricCard } from "@/components/ui/metric-card";
+import { MetricGrid, Section, TableSection, WorkbenchGrid } from "@/components/ui/page-layout";
 import { SelectInput, TextInput } from "@/components/ui/scenario-input";
 import { useMarketData } from "@/components/use-market-data";
 import {
@@ -168,95 +169,101 @@ export function MarketIntelligenceWorkbench() {
   }
 
   return (
-    <div className="space-y-6">
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        <MetricCard label="Average rate" value={formatPercent(average)} />
-        <MetricCard label="Median rate" value={formatPercent(median(rateValues))} />
-        <MetricCard label="Highest rate" value={formatPercent(highest)} />
-        <MetricCard label="Lowest rate" value={formatPercent(lowest)} />
-        <MetricCard
-          label="Products analysed"
-          value={String(filteredRows.length)}
-          hint={
-            data ? `Data status: ${getMarketStatusLabel(data.summary.dataSourceStatus)}` : undefined
-          }
-        />
-        <MetricCard
-          label="Data source status"
-          value={data ? getMarketStatusLabel(data.summary.dataSourceStatus) : "Fallback"}
-          hint="Live CDR, Partial CDR + fallback or Fallback mode"
-        />
-      </section>
+    <div className="space-y-10">
+      <Section>
+        <MetricGrid className="xl:grid-cols-3 2xl:grid-cols-6">
+          <MetricCard label="Average rate" value={formatPercent(average)} />
+          <MetricCard label="Median rate" value={formatPercent(median(rateValues))} />
+          <MetricCard label="Highest rate" value={formatPercent(highest)} />
+          <MetricCard label="Lowest rate" value={formatPercent(lowest)} />
+          <MetricCard
+            label="Products analysed"
+            value={String(filteredRows.length)}
+            hint={
+              data ? `Data status: ${getMarketStatusLabel(data.summary.dataSourceStatus)}` : undefined
+            }
+          />
+          <MetricCard
+            label="Data source status"
+            value={data ? getMarketStatusLabel(data.summary.dataSourceStatus) : "Fallback"}
+            hint="Live CDR, Partial CDR + fallback or Fallback mode"
+          />
+        </MetricGrid>
+      </Section>
 
-      <FilterBar>
-        <TextInput
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search bank or product"
-        />
-        <SelectInput value={bankFilter} onChange={(event) => setBankFilter(event.target.value)}>
-          <option>All</option>
-          {banks.map((bank) => (
-            <option key={bank}>{bank}</option>
-          ))}
-        </SelectInput>
-        <SelectInput
-          value={categoryFilter}
-          onChange={(event) => setCategoryFilter(event.target.value)}
-        >
-          <option>All</option>
-          <option>Savings</option>
-          <option>Transaction</option>
-          <option>Term Deposit</option>
-        </SelectInput>
-        <SelectInput
-          value={sourceFilter}
-          onChange={(event) => setSourceFilter(event.target.value)}
-        >
-          <option>All</option>
-          <option>CDR</option>
-          <option>Fallback</option>
-        </SelectInput>
-        <div className="flex gap-3">
-          <SelectInput
-            value={rateTypeFilter}
-            onChange={(event) => setRateTypeFilter(event.target.value)}
-          >
+      <Section>
+        <InsightPanel title="Market pressure insight">
+          Market pressure is not only a function of the highest rate. Product teams
+          should compare rate level, simplicity, eligibility, balance tiers and
+          customer relevance.
+        </InsightPanel>
+      </Section>
+
+      <Section>
+        <FilterBar gridClassName="xl:grid-cols-[minmax(0,1.1fr)_repeat(4,minmax(0,0.9fr))]">
+          <TextInput
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search bank or product"
+          />
+          <SelectInput value={bankFilter} onChange={(event) => setBankFilter(event.target.value)}>
             <option>All</option>
-            {rateTypes.map((rateType) => (
-              <option key={rateType}>{rateType}</option>
+            {banks.map((bank) => (
+              <option key={bank}>{bank}</option>
             ))}
           </SelectInput>
-          <Button tone="secondary" onClick={() => void refresh()}>
-            Refresh market data
-          </Button>
-        </div>
-      </FilterBar>
+          <SelectInput
+            value={categoryFilter}
+            onChange={(event) => setCategoryFilter(event.target.value)}
+          >
+            <option>All</option>
+            <option>Savings</option>
+            <option>Transaction</option>
+            <option>Term Deposit</option>
+          </SelectInput>
+          <SelectInput
+            value={sourceFilter}
+            onChange={(event) => setSourceFilter(event.target.value)}
+          >
+            <option>All</option>
+            <option>CDR</option>
+            <option>Fallback</option>
+          </SelectInput>
+          <div className="flex flex-wrap gap-3">
+            <SelectInput
+              value={rateTypeFilter}
+              onChange={(event) => setRateTypeFilter(event.target.value)}
+              className="min-w-[200px] flex-1"
+            >
+              <option>All</option>
+              {rateTypes.map((rateType) => (
+                <option key={rateType}>{rateType}</option>
+              ))}
+            </SelectInput>
+            <Button tone="secondary" onClick={() => void refresh()}>
+              Refresh market data
+            </Button>
+          </div>
+        </FilterBar>
+      </Section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-        <DataTable columns={columns} rows={filteredRows} emptyState="No competitor products match the current filters." />
-
-        <div className="space-y-6">
-          <InsightPanel title="Market pressure insight">
-            Market pressure is not only a function of the highest rate. Product teams
-            should compare rate level, simplicity, eligibility, balance tiers and
-            customer relevance.
-          </InsightPanel>
-
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-lg font-semibold text-slate-950">Rate distribution</p>
-                <p className="mt-1 text-sm text-slate-500">
-                  Public rates grouped into simple distribution bands.
-                </p>
-              </div>
-              <SelectInput value={mode} onChange={(event) => setMode(event.target.value as "live" | "fallback")} className="max-w-[180px]">
+      <Section>
+        <WorkbenchGrid>
+          <TableSection
+            title="Rate distribution"
+            description="Public rates grouped into simple distribution bands to show where the market clusters."
+            actions={
+              <SelectInput
+                value={mode}
+                onChange={(event) => setMode(event.target.value as "live" | "fallback")}
+                className="min-w-[180px]"
+              >
                 <option value="live">Live CDR mode</option>
                 <option value="fallback">Fallback mode</option>
               </SelectInput>
-            </div>
-            <div className="mt-5 space-y-3">
+            }
+          >
+            <div className="space-y-3">
               {rateBins.map((bin) => (
                 <div key={bin.label}>
                   <div className="mb-1 flex items-center justify-between text-sm text-slate-600">
@@ -272,26 +279,39 @@ export function MarketIntelligenceWorkbench() {
                 </div>
               ))}
             </div>
-          </section>
+          </TableSection>
 
-          <section className="rounded-3xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
-            <p className="text-sm font-semibold text-amber-900">Data caveat</p>
-            <p className="mt-3 text-sm leading-6 text-amber-900">
-              CDR rates are indicative and may include tiers, bonus conditions, eligibility
-              rules and special conditions. Human review required.
-            </p>
-            {loading ? <p className="mt-3 text-sm text-slate-500">Refreshing data...</p> : null}
-            {error ? <p className="mt-3 text-sm text-rose-700">{error}</p> : null}
-            {data?.summary.warnings?.length ? (
-              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-amber-900">
-                {data.summary.warnings.map((warning) => (
-                  <li key={warning}>{warning}</li>
-                ))}
-              </ul>
-            ) : null}
-          </section>
-        </div>
-      </section>
+          <div className="space-y-6">
+            <section className="rounded-3xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
+              <p className="text-sm font-semibold text-amber-900">Data caveat</p>
+              <p className="mt-3 text-sm leading-6 text-amber-900">
+                CDR rates are indicative and may include tiers, bonus conditions, eligibility
+                rules and special conditions. Human review required.
+              </p>
+              {loading ? <p className="mt-3 text-sm text-slate-500">Refreshing data...</p> : null}
+              {error ? <p className="mt-3 text-sm text-rose-700">{error}</p> : null}
+              {data?.summary.warnings?.length ? (
+                <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-amber-900">
+                  {data.summary.warnings.map((warning) => (
+                    <li key={warning}>{warning}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </section>
+          </div>
+        </WorkbenchGrid>
+      </Section>
+
+      <TableSection
+        title="Competitor rate table"
+        description="Compare rate level, product category, simplicity and source confidence without squeezing the market table into a narrow column."
+      >
+        <DataTable
+          columns={columns}
+          rows={filteredRows}
+          emptyState="No competitor products match the current filters."
+        />
+      </TableSection>
     </div>
   );
 }

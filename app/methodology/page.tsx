@@ -1,13 +1,22 @@
 import { InsightPanel } from "@/components/ui/insight-panel";
 import { PageHeader } from "@/components/ui/page-header";
+import { PageContainer, Section } from "@/components/ui/page-layout";
 
 export default function MethodologyPage() {
   return (
-    <div className="space-y-6">
+    <PageContainer>
       <PageHeader
         title="Methodology"
         description="How DepositIQ frames product, pricing and customer decisions using public market reference data, synthetic behavioural data and deterministic scoring logic."
       />
+
+      <Section>
+        <InsightPanel title="Methodology overview">
+          Understand the data sources, scoring models, caveats and governance logic
+          behind DepositIQ before using the market, pricing, complexity, primacy and
+          prioritisation workbenches for product decisions.
+        </InsightPanel>
+      </Section>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <InsightPanel title="1. Product thesis">
@@ -75,6 +84,6 @@ export default function MethodologyPage() {
           </ul>
         </InsightPanel>
       </div>
-    </div>
+    </PageContainer>
   );
 }

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
 import { InsightPanel } from "@/components/ui/insight-panel";
 import { MetricCard } from "@/components/ui/metric-card";
+import { MetricGrid, Section, TableSection, WorkbenchGrid } from "@/components/ui/page-layout";
 import {
   ScenarioField,
   SelectInput,
@@ -62,7 +63,9 @@ export function PricingSimulatorWorkbench() {
   const [scenario, setScenario] = useState<ScenarioName>("Base case");
   const [customerSegment, setCustomerSegment] = useState("Mass market saver");
   const [currentRate, setCurrentRate] = useState("4.40");
-  const [proposedRate, setProposedRate] = useState(String(Number((marketAverage - 0.15).toFixed(2))));
+  const [proposedRate, setProposedRate] = useState(
+    String(Number((marketAverage - 0.15).toFixed(2)))
+  );
   const [currentBalance, setCurrentBalance] = useState("12000");
   const [customerCount, setCustomerCount] = useState("18000");
   const [expectedBalanceGrowth, setExpectedBalanceGrowth] = useState("2");
@@ -96,8 +99,7 @@ export function PricingSimulatorWorkbench() {
     const currentAnnualInterestCost = portfolioBalance * (currentRateValue / 100);
     const proposedAnnualInterestCost = portfolioBalance * (proposedRateValue / 100);
     const incrementalAnnualCost = proposedAnnualInterestCost - currentAnnualInterestCost;
-    const campaignPeriodIncrementalCost =
-      incrementalAnnualCost * (campaignDurationValue / 12);
+    const campaignPeriodIncrementalCost = incrementalAnnualCost * (campaignDurationValue / 12);
     const estimatedAcquiredBalances =
       portfolioBalance *
       (expectedBalanceGrowthValue / 100) *
@@ -118,7 +120,6 @@ export function PricingSimulatorWorkbench() {
           : "Low";
 
     return {
-      currentRateValue,
       proposedRateValue,
       currentAnnualInterestCost,
       proposedAnnualInterestCost,
@@ -184,107 +185,268 @@ export function PricingSimulatorWorkbench() {
   ];
 
   return (
-    <div className="space-y-6">
-      <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="grid gap-4 md:grid-cols-2">
-          <ScenarioField label="Customer segment">
-            <SelectInput value={customerSegment} onChange={(event) => setCustomerSegment(event.target.value)}>
-              <option>Mass market saver</option>
-              <option>Affluent saver</option>
-              <option>Rate sensitive</option>
-              <option>Transaction-led primary</option>
-              <option>High-balance retention</option>
-            </SelectInput>
-          </ScenarioField>
-          <ScenarioField label="Scenario comparison">
-            <SelectInput
-              value={scenario}
-              onChange={(event) => setScenario(event.target.value as ScenarioName)}
-            >
-              {Object.keys(scenarioTemplates).map((item) => (
-                <option key={item}>{item}</option>
-              ))}
-            </SelectInput>
-          </ScenarioField>
-        </div>
-        <InsightPanel title="Scenario guidance">
-          Select a scenario, then edit the assumptions directly. Every pricing metric and
-          recommendation updates live, including competitor pressure, margin pressure,
-          funding-cost implications and campaign-period cost.
+    <div className="space-y-10">
+      <Section>
+        <InsightPanel title="Why this matters">
+          Deposit pricing is a commercial, behavioural and governance decision. Product
+          teams need to assess rate gaps, balance response, funding cost, cannibalisation,
+          campaign duration and conduct risk before repricing.
         </InsightPanel>
-      </section>
+      </Section>
 
-      <InsightPanel title="Why this matters">
-        Deposit pricing is a commercial, behavioural and governance decision. Product
-        teams need to assess rate gaps, balance response, funding cost, cannibalisation,
-        campaign duration and conduct risk before repricing.
-      </InsightPanel>
+      <Section>
+        <WorkbenchGrid className="xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]">
+          <TableSection
+            title="Inputs and scenario controls"
+            description="Select the customer context, choose a scenario baseline, then edit the commercial assumptions directly."
+          >
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <ScenarioField label="Customer segment">
+                <SelectInput
+                  value={customerSegment}
+                  onChange={(event) => setCustomerSegment(event.target.value)}
+                >
+                  <option>Mass market saver</option>
+                  <option>Affluent saver</option>
+                  <option>Rate sensitive</option>
+                  <option>Transaction-led primary</option>
+                  <option>High-balance retention</option>
+                </SelectInput>
+              </ScenarioField>
+              <ScenarioField label="Scenario comparison">
+                <SelectInput
+                  value={scenario}
+                  onChange={(event) => setScenario(event.target.value as ScenarioName)}
+                >
+                  {Object.keys(scenarioTemplates).map((item) => (
+                    <option key={item}>{item}</option>
+                  ))}
+                </SelectInput>
+              </ScenarioField>
+              <ScenarioField label="Current rate">
+                <TextInput
+                  type="number"
+                  step="0.01"
+                  value={currentRate}
+                  onChange={(event) => setCurrentRate(event.target.value)}
+                />
+              </ScenarioField>
+              <ScenarioField label="Proposed rate">
+                <TextInput
+                  type="number"
+                  step="0.01"
+                  value={proposedRate}
+                  onChange={(event) => setProposedRate(event.target.value)}
+                />
+              </ScenarioField>
+              <ScenarioField label="Current balance">
+                <TextInput
+                  type="number"
+                  value={currentBalance}
+                  onChange={(event) => setCurrentBalance(event.target.value)}
+                />
+              </ScenarioField>
+              <ScenarioField label="Customer count">
+                <TextInput
+                  type="number"
+                  value={customerCount}
+                  onChange={(event) => setCustomerCount(event.target.value)}
+                />
+              </ScenarioField>
+              <ScenarioField
+                label="Expected balance growth %"
+                hint="Incremental balance response during campaign"
+              >
+                <TextInput
+                  type="number"
+                  step="0.1"
+                  value={expectedBalanceGrowth}
+                  onChange={(event) => setExpectedBalanceGrowth(event.target.value)}
+                />
+              </ScenarioField>
+              <ScenarioField
+                label="Expected churn reduction %"
+                hint="Retention benefit from the offer"
+              >
+                <TextInput
+                  type="number"
+                  step="0.1"
+                  value={expectedChurnReduction}
+                  onChange={(event) => setExpectedChurnReduction(event.target.value)}
+                />
+              </ScenarioField>
+              <ScenarioField
+                label="Cannibalisation %"
+                hint="Share of balances that would have stayed anyway"
+              >
+                <TextInput
+                  type="number"
+                  step="0.1"
+                  value={cannibalisation}
+                  onChange={(event) => setCannibalisation(event.target.value)}
+                />
+              </ScenarioField>
+              <ScenarioField label="Campaign duration in months">
+                <TextInput
+                  type="number"
+                  value={campaignDuration}
+                  onChange={(event) => setCampaignDuration(event.target.value)}
+                />
+              </ScenarioField>
+              <ScenarioField label="Deposit beta assumption">
+                <TextInput
+                  type="number"
+                  step="0.01"
+                  value={depositBeta}
+                  onChange={(event) => setDepositBeta(event.target.value)}
+                />
+              </ScenarioField>
+              <ScenarioField label="Conduct risk level">
+                <SelectInput
+                  value={conductRisk}
+                  onChange={(event) => setConductRisk(event.target.value)}
+                >
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                </SelectInput>
+              </ScenarioField>
+              <ScenarioField label="Complexity level">
+                <SelectInput
+                  value={complexityLevel}
+                  onChange={(event) => setComplexityLevel(event.target.value)}
+                >
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                </SelectInput>
+              </ScenarioField>
+            </div>
+          </TableSection>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <ScenarioField label="Current rate">
-          <TextInput type="number" step="0.01" value={currentRate} onChange={(event) => setCurrentRate(event.target.value)} />
-        </ScenarioField>
-        <ScenarioField label="Proposed rate">
-          <TextInput type="number" step="0.01" value={proposedRate} onChange={(event) => setProposedRate(event.target.value)} />
-        </ScenarioField>
-        <ScenarioField label="Current balance">
-          <TextInput type="number" value={currentBalance} onChange={(event) => setCurrentBalance(event.target.value)} />
-        </ScenarioField>
-        <ScenarioField label="Customer count">
-          <TextInput type="number" value={customerCount} onChange={(event) => setCustomerCount(event.target.value)} />
-        </ScenarioField>
-        <ScenarioField label="Expected balance growth %" hint="Incremental balance response during campaign">
-          <TextInput type="number" step="0.1" value={expectedBalanceGrowth} onChange={(event) => setExpectedBalanceGrowth(event.target.value)} />
-        </ScenarioField>
-        <ScenarioField label="Expected churn reduction %" hint="Retention benefit from the offer">
-          <TextInput type="number" step="0.1" value={expectedChurnReduction} onChange={(event) => setExpectedChurnReduction(event.target.value)} />
-        </ScenarioField>
-        <ScenarioField label="Cannibalisation %" hint="Share of balances that would have stayed anyway">
-          <TextInput type="number" step="0.1" value={cannibalisation} onChange={(event) => setCannibalisation(event.target.value)} />
-        </ScenarioField>
-        <ScenarioField label="Campaign duration in months">
-          <TextInput type="number" value={campaignDuration} onChange={(event) => setCampaignDuration(event.target.value)} />
-        </ScenarioField>
-        <ScenarioField label="Deposit beta assumption">
-          <TextInput type="number" step="0.01" value={depositBeta} onChange={(event) => setDepositBeta(event.target.value)} />
-        </ScenarioField>
-        <ScenarioField label="Conduct risk level">
-          <SelectInput value={conductRisk} onChange={(event) => setConductRisk(event.target.value)}>
-            <option>Low</option>
-            <option>Medium</option>
-            <option>High</option>
-          </SelectInput>
-        </ScenarioField>
-        <ScenarioField label="Complexity level">
-          <SelectInput value={complexityLevel} onChange={(event) => setComplexityLevel(event.target.value)}>
-            <option>Low</option>
-            <option>Medium</option>
-            <option>High</option>
-          </SelectInput>
-        </ScenarioField>
-      </section>
+          <div className="space-y-6">
+            <InsightPanel title="Scenario guidance">
+              Select a scenario, then edit the assumptions directly. Every pricing metric and
+              recommendation updates live, including competitor pressure, margin pressure,
+              funding-cost implications and campaign-period cost.
+            </InsightPanel>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        <MetricCard label="Current annual interest cost" value={formatCurrency(numeric.currentAnnualInterestCost)} />
-        <MetricCard label="Proposed annual interest cost" value={formatCurrency(numeric.proposedAnnualInterestCost)} />
-        <MetricCard label="Incremental annual cost" value={formatCurrency(numeric.incrementalAnnualCost)} />
-        <MetricCard label="Campaign-period incremental cost" value={formatCurrency(numeric.campaignPeriodIncrementalCost)} />
-        <MetricCard label="Estimated acquired balances" value={formatCurrency(numeric.estimatedAcquiredBalances)} />
-        <MetricCard label="Estimated retained balances" value={formatCurrency(numeric.estimatedRetainedBalances)} />
-        <MetricCard label="Rate gap vs market average" value={formatPercent(numeric.rateGapToMarketAverage)} />
-        <MetricCard label="Rate gap vs highest competitor" value={formatPercent(numeric.rateGapToHighestCompetitor)} />
-        <MetricCard label="Spread vs RBA cash rate" value={formatPercent(numeric.spreadToRbaCashRate)} />
-        <MetricCard
-          label="Pressure flags"
-          value={`${numeric.competitorPressure} / ${numeric.marginPressure}`}
-          hint="Competitor pressure / Margin pressure"
-        />
-      </section>
+            <InsightPanel title="Recommendation panel">
+              <div className="space-y-4">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="rounded-2xl bg-slate-50 p-4">
+                    <p className="text-xs font-semibold text-slate-500">Pricing action</p>
+                    <p className="mt-2 text-lg font-semibold text-slate-950">
+                      {getPricingAction(
+                        numeric.competitorPressure,
+                        numeric.marginPressure,
+                        numeric.incrementalAnnualCost
+                      )}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-slate-50 p-4">
+                    <p className="text-xs font-semibold text-slate-500">
+                      Stakeholders to involve
+                    </p>
+                    <p className="mt-2 text-sm font-medium text-slate-900">
+                      Product, Finance, Treasury, Risk and Compliance
+                    </p>
+                  </div>
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-xs font-semibold text-slate-500">Rationale</p>
+                  <p className="mt-2 text-sm text-slate-900">{recommendation}</p>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="rounded-2xl bg-slate-50 p-4">
+                    <p className="text-xs font-semibold text-slate-500">Risks to validate</p>
+                    <p className="mt-2 text-sm text-slate-900">
+                      Funding cost pressure, conduct clarity, cannibalisation and segment response.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-slate-50 p-4">
+                    <p className="text-xs font-semibold text-slate-500">Metrics to monitor</p>
+                    <p className="mt-2 text-sm text-slate-900">
+                      Balance growth, churn reduction, incremental cost, offer take-up and complaints.
+                    </p>
+                  </div>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="rounded-2xl bg-slate-50 p-4">
+                    <p className="text-xs font-semibold text-slate-500">Conduct risk</p>
+                    <p className="mt-2 font-medium text-slate-900">{conductRisk}</p>
+                  </div>
+                  <div className="rounded-2xl bg-slate-50 p-4">
+                    <p className="text-xs font-semibold text-slate-500">Complexity level</p>
+                    <p className="mt-2 font-medium text-slate-900">{complexityLevel}</p>
+                  </div>
+                </div>
+                <p className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                  Final pricing decisions require Product, Finance, Treasury, Risk and Compliance review.
+                </p>
+              </div>
+            </InsightPanel>
+          </div>
+        </WorkbenchGrid>
+      </Section>
 
-      <section className="grid gap-6 xl:grid-cols-[1fr_0.95fr]">
+      <Section>
+        <MetricGrid className="xl:grid-cols-3 2xl:grid-cols-5">
+          <MetricCard
+            label="Current annual interest cost"
+            value={formatCurrency(numeric.currentAnnualInterestCost)}
+          />
+          <MetricCard
+            label="Proposed annual interest cost"
+            value={formatCurrency(numeric.proposedAnnualInterestCost)}
+          />
+          <MetricCard
+            label="Incremental annual cost"
+            value={formatCurrency(numeric.incrementalAnnualCost)}
+          />
+          <MetricCard
+            label="Campaign-period incremental cost"
+            value={formatCurrency(numeric.campaignPeriodIncrementalCost)}
+          />
+          <MetricCard
+            label="Estimated acquired balances"
+            value={formatCurrency(numeric.estimatedAcquiredBalances)}
+          />
+          <MetricCard
+            label="Estimated retained balances"
+            value={formatCurrency(numeric.estimatedRetainedBalances)}
+          />
+          <MetricCard
+            label="Rate gap vs market average"
+            value={formatPercent(numeric.rateGapToMarketAverage)}
+          />
+          <MetricCard
+            label="Rate gap vs highest competitor"
+            value={formatPercent(numeric.rateGapToHighestCompetitor)}
+          />
+          <MetricCard
+            label="Spread vs RBA cash rate"
+            value={formatPercent(numeric.spreadToRbaCashRate)}
+          />
+          <MetricCard
+            label="Pressure flags"
+            value={`${numeric.competitorPressure} / ${numeric.marginPressure}`}
+            hint="Competitor pressure / Margin pressure"
+          />
+        </MetricGrid>
+      </Section>
+
+      <TableSection
+        title="Scenario comparison"
+        description="Use the deterministic scenario set as a quick comparison view, then continue adjusting the custom assumptions above."
+      >
         <DataTable
           columns={[
-            { key: "name", label: "Scenario", render: (row: (typeof scenarioRows)[number]) => row.name },
+            {
+              key: "name",
+              label: "Scenario",
+              render: (row: (typeof scenarioRows)[number]) => row.name
+            },
             {
               key: "rate",
               label: "Proposed rate",
@@ -294,7 +456,15 @@ export function PricingSimulatorWorkbench() {
               key: "pressure",
               label: "Competitor pressure",
               render: (row: (typeof scenarioRows)[number]) => (
-                <Badge tone={row.pressure === "High" ? "danger" : row.pressure === "Medium" ? "warning" : "success"}>
+                <Badge
+                  tone={
+                    row.pressure === "High"
+                      ? "danger"
+                      : row.pressure === "Medium"
+                        ? "warning"
+                        : "success"
+                  }
+                >
                   {row.pressure}
                 </Badge>
               )
@@ -302,57 +472,7 @@ export function PricingSimulatorWorkbench() {
           ]}
           rows={scenarioRows}
         />
-
-        <InsightPanel title="Recommendation panel">
-          <div className="space-y-4">
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold text-slate-500">Pricing action</p>
-                <p className="mt-2 text-lg font-semibold text-slate-950">
-                  {getPricingAction(numeric.competitorPressure, numeric.marginPressure, numeric.incrementalAnnualCost)}
-                </p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold text-slate-500">Stakeholders to involve</p>
-                <p className="mt-2 text-sm font-medium text-slate-900">
-                  Product, Finance, Treasury, Risk and Compliance
-                </p>
-              </div>
-            </div>
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <p className="text-xs font-semibold text-slate-500">Rationale</p>
-              <p className="mt-2 text-sm text-slate-900">{recommendation}</p>
-            </div>
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold text-slate-500">Risks to validate</p>
-                <p className="mt-2 text-sm text-slate-900">
-                  Funding cost pressure, conduct clarity, cannibalisation and segment response.
-                </p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold text-slate-500">Metrics to monitor</p>
-                <p className="mt-2 text-sm text-slate-900">
-                  Balance growth, churn reduction, incremental cost, offer take-up and complaints.
-                </p>
-              </div>
-            </div>
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold text-slate-500">Conduct risk</p>
-                <p className="mt-2 font-medium text-slate-900">{conductRisk}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-semibold text-slate-500">Complexity level</p>
-                <p className="mt-2 font-medium text-slate-900">{complexityLevel}</p>
-              </div>
-            </div>
-            <p className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-              Final pricing decisions require Product, Finance, Treasury, Risk and Compliance review.
-            </p>
-          </div>
-        </InsightPanel>
-      </section>
+      </TableSection>
     </div>
   );
 }
@@ -388,26 +508,38 @@ function buildRecommendation(input: {
   const notes: string[] = [];
 
   if (input.rateGapToMarketAverage < -0.5) {
-    notes.push("Competitor pressure is high because the proposed rate sits more than 0.50% below the market average.");
+    notes.push(
+      "Competitor pressure is high because the proposed rate sits more than 0.50% below the market average."
+    );
   } else if (input.competitorPressure === "Low") {
-    notes.push("Competitor pressure is low, so holding rate and focusing on customer primacy and customer experience is viable.");
+    notes.push(
+      "Competitor pressure is low, so holding rate and focusing on customer primacy and customer experience is viable."
+    );
   } else {
-    notes.push("Competitor pressure is moderate, so monitor retention and test response before broad repricing.");
+    notes.push(
+      "Competitor pressure is moderate, so monitor retention and test response before broad repricing."
+    );
   }
 
   if (input.spreadToRbaCashRate > 0.75) {
-    notes.push("The proposed rate materially exceeds the RBA cash rate, which flags funding cost pressure.");
+    notes.push(
+      "The proposed rate materially exceeds the RBA cash rate, which flags funding cost pressure."
+    );
   }
 
   if (input.incrementalAnnualCost > 1500000) {
-    notes.push("Broad repricing carries high incremental cost, so prefer a targeted segment-level offer.");
+    notes.push(
+      "Broad repricing carries high incremental cost, so prefer a targeted segment-level offer."
+    );
   }
 
   if (input.marginPressure === "High") {
     notes.push("Margin pressure is elevated and requires tighter Treasury and Finance review.");
   }
 
-  notes.push("Final pricing decisions require Product, Finance, Treasury, Risk and Compliance review.");
+  notes.push(
+    "Final pricing decisions require Product, Finance, Treasury, Risk and Compliance review."
+  );
 
   return notes.join(" ");
 }

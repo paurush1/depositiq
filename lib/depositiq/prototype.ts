@@ -35,6 +35,11 @@ export const productModules = [
     href: "/prioritisation",
     label: "Prioritisation",
     shortDescription: "Re-rank the roadmap with adjustable decision weights."
+  },
+  {
+    href: "/methodology",
+    label: "Methodology",
+    shortDescription: "Understand the product thesis, data inputs and scoring logic."
   }
 ] as const;
 
@@ -110,6 +115,9 @@ export type Initiative = {
   keyStakeholders: string;
   deliveryRisk: string;
   suggestedExperiment: string;
+  sourceSignals: Array<
+    "Market pressure" | "Customer friction" | "Product complexity" | "Primacy uplift" | "Risk/control"
+  >;
 };
 
 export type PrioritisationWeights = {
@@ -321,7 +329,8 @@ export const initiatives: Initiative[] = [
     expectedMetricImpact: "Higher bonus qualification clarity and lower complaint rate.",
     keyStakeholders: "Deposits, Digital, Risk, Compliance",
     deliveryRisk: "Medium",
-    suggestedExperiment: "Prototype a simplified rate explainer and progress tracker."
+    suggestedExperiment: "Prototype a simplified rate explainer and progress tracker.",
+    sourceSignals: ["Customer friction", "Product complexity", "Risk/control"]
   },
   {
     id: "I-02",
@@ -339,7 +348,8 @@ export const initiatives: Initiative[] = [
     expectedMetricImpact: "Higher PayID registration and lower onboarding drop-off.",
     keyStakeholders: "Payments, Operations, Distribution",
     deliveryRisk: "Medium",
-    suggestedExperiment: "Test simplified PayID setup flow with proactive nudges."
+    suggestedExperiment: "Test simplified PayID setup flow with proactive nudges.",
+    sourceSignals: ["Primacy uplift", "Customer friction"]
   },
   {
     id: "I-03",
@@ -357,7 +367,8 @@ export const initiatives: Initiative[] = [
     expectedMetricImpact: "Lower dispute call volume and better complaint resolution satisfaction.",
     keyStakeholders: "Operations, Payments, Risk",
     deliveryRisk: "High",
-    suggestedExperiment: "Pilot status-tracking updates for one dispute queue."
+    suggestedExperiment: "Pilot status-tracking updates for one dispute queue.",
+    sourceSignals: ["Customer friction", "Risk/control"]
   },
   {
     id: "I-04",
@@ -375,7 +386,8 @@ export const initiatives: Initiative[] = [
     expectedMetricImpact: "Higher maturity instruction completion and lower attrition at rollover.",
     keyStakeholders: "Deposits, Operations, Treasury",
     deliveryRisk: "Medium",
-    suggestedExperiment: "Trial a guided maturity experience for upcoming cohorts."
+    suggestedExperiment: "Trial a guided maturity experience for upcoming cohorts.",
+    sourceSignals: ["Customer friction", "Risk/control", "Product complexity"]
   },
   {
     id: "I-05",
@@ -393,7 +405,8 @@ export const initiatives: Initiative[] = [
     expectedMetricImpact: "Higher tokenised card activation and transaction share of wallet.",
     keyStakeholders: "Payments, Marketing, Distribution",
     deliveryRisk: "Low",
-    suggestedExperiment: "Target a low-wallet cohort with in-app activation prompts."
+    suggestedExperiment: "Target a low-wallet cohort with in-app activation prompts.",
+    sourceSignals: ["Primacy uplift"]
   },
   {
     id: "I-06",
@@ -411,7 +424,8 @@ export const initiatives: Initiative[] = [
     expectedMetricImpact: "Better balance retention in price-sensitive cohorts.",
     keyStakeholders: "Deposits, Treasury, Finance, Risk",
     deliveryRisk: "Medium",
-    suggestedExperiment: "Run a narrow retention offer with clear segment guardrails."
+    suggestedExperiment: "Run a narrow retention offer with clear segment guardrails.",
+    sourceSignals: ["Market pressure", "Risk/control"]
   },
   {
     id: "I-07",
@@ -429,7 +443,8 @@ export const initiatives: Initiative[] = [
     expectedMetricImpact: "Faster pricing response times and better governance packs.",
     keyStakeholders: "Deposits, Treasury, Product",
     deliveryRisk: "Low",
-    suggestedExperiment: "Ship alerts for major rate changes with manual review workflow."
+    suggestedExperiment: "Ship alerts for major rate changes with manual review workflow.",
+    sourceSignals: ["Market pressure"]
   },
   {
     id: "I-08",
@@ -447,7 +462,8 @@ export const initiatives: Initiative[] = [
     expectedMetricImpact: "Faster incident triage and better operational reporting.",
     keyStakeholders: "Technology, Operations, Risk",
     deliveryRisk: "High",
-    suggestedExperiment: "Create an MVP incident view across key external vendors."
+    suggestedExperiment: "Create an MVP incident view across key external vendors.",
+    sourceSignals: ["Risk/control"]
   },
   {
     id: "I-09",
@@ -465,7 +481,8 @@ export const initiatives: Initiative[] = [
     expectedMetricImpact: "More recurring payments per active customer and lower churn.",
     keyStakeholders: "Payments, Digital, Distribution",
     deliveryRisk: "Medium",
-    suggestedExperiment: "Test a guided recurring-payment switch assistant."
+    suggestedExperiment: "Test a guided recurring-payment switch assistant.",
+    sourceSignals: ["Primacy uplift", "Customer friction"]
   },
   {
     id: "I-10",
@@ -483,7 +500,8 @@ export const initiatives: Initiative[] = [
     expectedMetricImpact: "Improved visibility into product clarity and conditionality risk.",
     keyStakeholders: "Deposits, Product, Risk, Compliance",
     deliveryRisk: "Low",
-    suggestedExperiment: "Start a monthly complexity scan across flagship products."
+    suggestedExperiment: "Start a monthly complexity scan across flagship products.",
+    sourceSignals: ["Product complexity", "Risk/control", "Market pressure"]
   }
 ];
 
@@ -493,10 +511,10 @@ export function getMarketStatusLabel(status: MarketPricingPayload["summary"]["da
   }
 
   if (status === "partial") {
-    return "Partial";
+    return "Partial CDR + fallback";
   }
 
-  return "Fallback";
+  return "Fallback mode";
 }
 
 export function formatPercent(value: number) {
@@ -564,6 +582,25 @@ export function analyseCompetitorRates(
       comprehensionRisk
     };
   });
+}
+
+export function getSimplificationOpportunity(rate: CompetitorRateWithComplexity) {
+  const text = `${rate.conditionsSummary ?? ""} ${rate.rateType ?? ""} ${rate.feesSummary ?? ""}`.toLowerCase();
+
+  if (/bonus|qualif|monthly deposit|monthly activity/.test(text)) {
+    return "Reduce bonus hurdles or make qualification progress visible.";
+  }
+  if (/tier|threshold|balance/.test(text)) {
+    return "Simplify balance tiers or explain them with clearer thresholds.";
+  }
+  if (/linked|transaction account/.test(text)) {
+    return "Clarify linked-account requirements in onboarding and pricing copy.";
+  }
+  if (/fee/.test(text)) {
+    return "Surface fees and waiver rules more clearly in the product journey.";
+  }
+
+  return "Review product copy to make conditions easier to understand at a glance.";
 }
 
 export function scorePrimaryBanking(customer: SyntheticCustomer): CustomerWithScore {
@@ -729,4 +766,47 @@ export function rankInitiatives(weights: PrioritisationWeights) {
       };
     })
     .sort((a, b) => b.priorityScore - a.priorityScore);
+}
+
+export function getTopFrictionTheme(items: FeedbackItem[]) {
+  const counts = new Map<FeedbackItem["theme"], number>();
+
+  for (const item of items) {
+    counts.set(item.theme, (counts.get(item.theme) ?? 0) + item.severityWeight);
+  }
+
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "No theme";
+}
+
+export function getLeverImpact(before: CustomerWithScore, after: CustomerWithScore) {
+  const deltas: string[] = [];
+
+  if (before.salaryCredit !== after.salaryCredit) {
+    deltas.push(after.salaryCredit ? "Salary credit added" : "Salary credit removed");
+  }
+  if (before.payIdRegistered !== after.payIdRegistered) {
+    deltas.push(after.payIdRegistered ? "PayID enabled" : "PayID removed");
+  }
+  if (before.walletProvisioned !== after.walletProvisioned) {
+    deltas.push(after.walletProvisioned ? "Wallet activation enabled" : "Wallet deactivated");
+  }
+  if (before.cardUsagePerMonth !== after.cardUsagePerMonth) {
+    deltas.push(`Card usage changed from ${before.cardUsagePerMonth} to ${after.cardUsagePerMonth} per month`);
+  }
+
+  return deltas.length > 0 ? deltas.join(" • ") : "No lever changes applied.";
+}
+
+export function getSuggestedCampaignAction(scoreChange: number, after: CustomerWithScore) {
+  if (scoreChange >= 15) {
+    return "Trigger a primacy journey and deepen payments engagement while momentum is high.";
+  }
+  if (scoreChange >= 5) {
+    return "Follow up with a targeted cross-sell or relationship-deepening nudge.";
+  }
+  if (after.relationshipBand === "Rate chaser / low engagement") {
+    return "Use a low-friction onboarding and payments activation campaign before pricing offers.";
+  }
+
+  return "Monitor response and sequence the next primacy nudge based on behaviour.";
 }

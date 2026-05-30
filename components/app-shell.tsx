@@ -89,7 +89,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <footer className="border-t border-slate-200 bg-white/80 px-4 py-5 text-sm text-slate-500 sm:px-6 lg:px-8">
             DepositIQ is a portfolio product prototype. It uses public product reference
-            data where available and synthetic customer/feedback data. It does not
+            data where available and synthetic behavioural/feedback data. It does not
             represent any bank&apos;s internal systems, customers, strategy or proprietary
             data.
           </footer>

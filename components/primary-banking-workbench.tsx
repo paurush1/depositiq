@@ -12,6 +12,8 @@ import {
   TextInput
 } from "@/components/ui/scenario-input";
 import {
+  getLeverImpact,
+  getSuggestedCampaignAction,
   scorePrimaryBanking,
   syntheticCustomers,
   type SyntheticCustomer
@@ -39,6 +41,7 @@ export function PrimaryBankingWorkbench() {
   const [sampleCustomer, setSampleCustomer] = useState<SyntheticCustomer>(syntheticCustomers[0]);
   const beforeScore = scorePrimaryBanking(syntheticCustomers[0]);
   const afterScore = scorePrimaryBanking(sampleCustomer);
+  const scoreChange = afterScore.primaryBankingScore - beforeScore.primaryBankingScore;
 
   return (
     <div className="space-y-6">
@@ -142,6 +145,13 @@ export function PrimaryBankingWorkbench() {
         />
 
         <div className="space-y-6">
+          <InsightPanel title="Why this matters">
+            Primary banking behaviour shows whether deposits and payments are becoming
+            part of the customer&apos;s daily financial life. Salary credits, wallet
+            activation, PayID, card usage and recurring payments are stronger
+            relationship signals than balance alone.
+          </InsightPanel>
+
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-lg font-semibold text-slate-950">What-if panel</p>
             <p className="mt-2 text-sm text-slate-500">
@@ -220,7 +230,13 @@ export function PrimaryBankingWorkbench() {
                 </p>
               </div>
             </div>
-            <p className="mt-4">{afterScore.nextBestAction}</p>
+            <p className="mt-4 font-medium text-slate-900">
+              Score movement: {scoreChange >= 0 ? "+" : ""}
+              {scoreChange}
+            </p>
+            <p className="mt-2">{getLeverImpact(beforeScore, afterScore)}</p>
+            <p className="mt-2">Suggested campaign action: {getSuggestedCampaignAction(scoreChange, afterScore)}</p>
+            <p className="mt-2">Next-best action: {afterScore.nextBestAction}</p>
           </InsightPanel>
         </div>
       </section>

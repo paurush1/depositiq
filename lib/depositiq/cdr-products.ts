@@ -49,7 +49,7 @@ export async function getCompetitorDepositRates(options?: {
     return {
       rates: fallbackCompetitorRates,
       status: "fallback",
-      warnings: ["Demo fallback mode enabled. Live CDR calls were skipped."]
+      warnings: ["Fallback mode enabled. Live CDR calls were skipped."]
     };
   }
 
@@ -72,20 +72,33 @@ export async function getCompetitorDepositRates(options?: {
       )
     ).flat();
 
-    if (liveRates.length === 0) {
+    const dedupedLiveRates = dedupeRates(liveRates);
+
+    if (dedupedLiveRates.length === 0) {
       return {
         rates: fallbackCompetitorRates,
         status: "fallback",
         warnings: [
-          "No live CDR competitor rates were available. Showing demo fallback data.",
+          "No live CDR competitor rates were available. Showing fallback data.",
+          ...warnings
+        ]
+      };
+    }
+
+    if (warnings.length > 0 || dedupedLiveRates.length < fallbackCompetitorRates.length / 2) {
+      return {
+        rates: dedupeRates([...dedupedLiveRates, ...fallbackCompetitorRates]).slice(0, 30),
+        status: "partial",
+        warnings: [
+          "Partial CDR + fallback mode. Live data was combined with fallback benchmark products.",
           ...warnings
         ]
       };
     }
 
     return {
-      rates: dedupeRates(liveRates).slice(0, 18),
-      status: warnings.length > 0 ? "partial" : "live",
+      rates: dedupeRates(dedupedLiveRates).slice(0, 30),
+      status: "live",
       warnings
     };
   } catch (error) {
@@ -409,7 +422,8 @@ function dedupeRates(rates: CompetitorDepositRate[]) {
       rate.productName,
       rate.category,
       rate.termMonths ?? "",
-      rate.headlineRate
+      rate.headlineRate,
+      rate.source === "CDR" ? "cdr" : "fallback"
     ].join("|");
 
     if (seen.has(key)) {

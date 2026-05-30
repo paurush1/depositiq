@@ -80,6 +80,19 @@ export function PrioritisationWorkbench() {
               )
             },
             {
+              key: "signals",
+              label: "Source signals",
+              render: (row: (typeof ranked)[number]) => (
+                <div className="flex flex-wrap gap-2">
+                  {row.sourceSignals.map((signal) => (
+                    <Badge key={signal} tone="neutral">
+                      {signal}
+                    </Badge>
+                  ))}
+                </div>
+              )
+            },
+            {
               key: "stakeholders",
               label: "Key stakeholders",
               render: (row: (typeof ranked)[number]) => row.keyStakeholders
@@ -89,6 +102,12 @@ export function PrioritisationWorkbench() {
         />
 
         <div className="space-y-6">
+          <InsightPanel title="Why this matters">
+            Prioritisation should make trade-offs explicit. A strong roadmap balances
+            commercial value, customer impact, risk reduction, market pressure,
+            primacy uplift and delivery complexity.
+          </InsightPanel>
+
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-lg font-semibold text-slate-950">Top 3 initiatives</p>
             <div className="mt-5 space-y-4">
@@ -104,6 +123,13 @@ export function PrioritisationWorkbench() {
                   <p className="mt-2 text-sm text-slate-500">
                     Suggested experiment: {initiative.suggestedExperiment}
                   </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {initiative.sourceSignals.map((signal) => (
+                      <Badge key={signal} tone="neutral">
+                        {signal}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
@@ -115,6 +141,14 @@ export function PrioritisationWorkbench() {
               <p>Expected metric impact: {topThree[0].expectedMetricImpact}</p>
               <p>Key stakeholders: {topThree[0].keyStakeholders}</p>
               <p>Delivery risk: {topThree[0].deliveryRisk}</p>
+              <p>Suggested experiment: {topThree[0].suggestedExperiment}</p>
+              <div className="flex flex-wrap gap-2">
+                {topThree[0].sourceSignals.map((signal) => (
+                  <Badge key={signal} tone="neutral">
+                    {signal}
+                  </Badge>
+                ))}
+              </div>
               <p className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
                 Prioritisation should be reviewed with Product, Technology, Risk,
                 Operations, Finance, Treasury and Distribution.

@@ -214,6 +214,12 @@ export function PricingSimulatorWorkbench() {
         </InsightPanel>
       </section>
 
+      <InsightPanel title="Why this matters">
+        Deposit pricing is a commercial, behavioural and governance decision. Product
+        teams need to assess rate gaps, balance response, funding cost, cannibalisation,
+        campaign duration and conduct risk before repricing.
+      </InsightPanel>
+
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <ScenarioField label="Current rate">
           <TextInput type="number" step="0.01" value={currentRate} onChange={(event) => setCurrentRate(event.target.value)} />
@@ -299,7 +305,38 @@ export function PricingSimulatorWorkbench() {
 
         <InsightPanel title="Recommendation panel">
           <div className="space-y-4">
-            <p>{recommendation}</p>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-semibold text-slate-500">Pricing action</p>
+                <p className="mt-2 text-lg font-semibold text-slate-950">
+                  {getPricingAction(numeric.competitorPressure, numeric.marginPressure, numeric.incrementalAnnualCost)}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-semibold text-slate-500">Stakeholders to involve</p>
+                <p className="mt-2 text-sm font-medium text-slate-900">
+                  Product, Finance, Treasury, Risk and Compliance
+                </p>
+              </div>
+            </div>
+            <div className="rounded-2xl bg-slate-50 p-4">
+              <p className="text-xs font-semibold text-slate-500">Rationale</p>
+              <p className="mt-2 text-sm text-slate-900">{recommendation}</p>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-semibold text-slate-500">Risks to validate</p>
+                <p className="mt-2 text-sm text-slate-900">
+                  Funding cost pressure, conduct clarity, cannibalisation and segment response.
+                </p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-semibold text-slate-500">Metrics to monitor</p>
+                <p className="mt-2 text-sm text-slate-900">
+                  Balance growth, churn reduction, incremental cost, offer take-up and complaints.
+                </p>
+              </div>
+            </div>
             <div className="grid gap-3 md:grid-cols-2">
               <div className="rounded-2xl bg-slate-50 p-4">
                 <p className="text-xs font-semibold text-slate-500">Conduct risk</p>
@@ -318,6 +355,27 @@ export function PricingSimulatorWorkbench() {
       </section>
     </div>
   );
+}
+
+function getPricingAction(
+  competitorPressure: "Low" | "Medium" | "High",
+  marginPressure: "Low" | "Medium" | "High",
+  incrementalAnnualCost: number
+) {
+  if (competitorPressure === "High" && incrementalAnnualCost > 1500000) {
+    return "Targeted offer";
+  }
+  if (competitorPressure === "High" && marginPressure !== "High") {
+    return "Defensive repricing";
+  }
+  if (marginPressure === "High") {
+    return "Simplify proposition";
+  }
+  if (competitorPressure === "Low") {
+    return "Hold";
+  }
+
+  return "Monitor";
 }
 
 function buildRecommendation(input: {

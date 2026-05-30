@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { FilterBar } from "@/components/ui/filter-bar";
+import { InsightPanel } from "@/components/ui/insight-panel";
 import { MetricCard } from "@/components/ui/metric-card";
 import { SelectInput, TextInput } from "@/components/ui/scenario-input";
 import { useMarketData } from "@/components/use-market-data";
@@ -180,6 +181,11 @@ export function MarketIntelligenceWorkbench() {
             data ? `Data status: ${getMarketStatusLabel(data.summary.dataSourceStatus)}` : undefined
           }
         />
+        <MetricCard
+          label="Data source status"
+          value={data ? getMarketStatusLabel(data.summary.dataSourceStatus) : "Fallback"}
+          hint="Live CDR, Partial CDR + fallback or Fallback mode"
+        />
       </section>
 
       <FilterBar>
@@ -200,6 +206,7 @@ export function MarketIntelligenceWorkbench() {
         >
           <option>All</option>
           <option>Savings</option>
+          <option>Transaction</option>
           <option>Term Deposit</option>
         </SelectInput>
         <SelectInput
@@ -230,6 +237,12 @@ export function MarketIntelligenceWorkbench() {
         <DataTable columns={columns} rows={filteredRows} emptyState="No competitor products match the current filters." />
 
         <div className="space-y-6">
+          <InsightPanel title="Market pressure insight">
+            Market pressure is not only a function of the highest rate. Product teams
+            should compare rate level, simplicity, eligibility, balance tiers and
+            customer relevance.
+          </InsightPanel>
+
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div>

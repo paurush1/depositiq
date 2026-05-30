@@ -1,4 +1,5 @@
 import { getCompetitorDepositRates } from "@/lib/depositiq/cdr-products";
+import { fallbackCompetitorRates, fallbackCashRate } from "@/lib/depositiq/fallback";
 import { getRbaCashRate } from "@/lib/depositiq/rba";
 import type {
   CompetitorDepositRate,
@@ -46,6 +47,36 @@ export async function getMarketPricingPayload(
       marketAverageRate,
       highestCompetitorRate,
       cashRateTarget: cashRate.cashRateTarget
+    }),
+    disclaimers: DISCLAIMERS,
+    generatedAt: new Date().toISOString()
+  };
+}
+
+export function getFallbackMarketPricingPayload(): MarketPricingPayload {
+  const marketAverageRate = round(
+    fallbackCompetitorRates.reduce((sum, rate) => sum + rate.headlineRate, 0) /
+      Math.max(fallbackCompetitorRates.length, 1)
+  );
+  const highestCompetitorRate = round(
+    Math.max(...fallbackCompetitorRates.map((rate) => rate.headlineRate), 0)
+  );
+
+  return {
+    cashRate: fallbackCashRate,
+    competitorRates: fallbackCompetitorRates,
+    summary: {
+      marketAverageRate,
+      highestCompetitorRate,
+      competitorProductsAnalysed: fallbackCompetitorRates.length,
+      dataSourceStatus: "fallback",
+      mode: "fallback",
+      warnings: ["Showing fallback benchmark data while live market data loads."]
+    },
+    scenarios: buildScenarios({
+      marketAverageRate,
+      highestCompetitorRate,
+      cashRateTarget: fallbackCashRate.cashRateTarget
     }),
     disclaimers: DISCLAIMERS,
     generatedAt: new Date().toISOString()

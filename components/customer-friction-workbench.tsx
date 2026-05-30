@@ -26,6 +26,7 @@ export function CustomerFrictionWorkbench() {
   const [journeyFilter, setJourneyFilter] = useState("All");
   const [ownerFilter, setOwnerFilter] = useState("All");
   const [draftFeedback, setDraftFeedback] = useState("");
+  const [lastClassification, setLastClassification] = useState<FeedbackItem | null>(null);
 
   const filteredFeedback = feedbackItems.filter((item) => {
     if (themeFilter !== "All" && item.theme !== themeFilter) return false;
@@ -50,14 +51,14 @@ export function CustomerFrictionWorkbench() {
     }
 
     const classified = classifyFeedback(draftFeedback);
-    setFeedbackItems((current) => [
-      {
-        id: `F-${current.length + 1}`,
-        comment: draftFeedback.trim(),
-        ...classified
-      },
-      ...current
-    ]);
+    const nextItem: FeedbackItem = {
+      id: `F-${feedbackItems.length + 1}`,
+      comment: draftFeedback.trim(),
+      ...classified
+    };
+
+    setFeedbackItems((current) => [nextItem, ...current]);
+    setLastClassification(nextItem);
     setDraftFeedback("");
   }
 
@@ -172,6 +173,11 @@ export function CustomerFrictionWorkbench() {
         />
 
         <div className="space-y-6">
+          <InsightPanel title="Why this matters">
+            Friction analytics helps product teams convert complaints, app reviews and
+            servicing pain points into product actions, accountable owners and measurable outcomes.
+          </InsightPanel>
+
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-lg font-semibold text-slate-950">Theme cards</p>
             <div className="mt-5 grid gap-3">
@@ -199,6 +205,20 @@ export function CustomerFrictionWorkbench() {
             <div className="mt-4">
               <Button onClick={addFeedback}>Add feedback</Button>
             </div>
+            {lastClassification ? (
+              <div className="mt-4 rounded-2xl border border-sky-200 bg-sky-50 p-4">
+                <p className="text-xs font-semibold text-sky-700">Latest classification</p>
+                <p className="mt-2 text-sm font-medium text-slate-900">
+                  Theme: {lastClassification.theme}
+                </p>
+                <p className="mt-1 text-sm text-slate-700">
+                  Likely owner: {lastClassification.owner}
+                </p>
+                <p className="mt-1 text-sm text-slate-700">
+                  Suggested metric: {lastClassification.metricToTrack}
+                </p>
+              </div>
+            ) : null}
           </section>
 
           <InsightPanel title="Deterministic classification">

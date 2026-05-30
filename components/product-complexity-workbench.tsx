@@ -8,7 +8,11 @@ import { InsightPanel } from "@/components/ui/insight-panel";
 import { MetricCard } from "@/components/ui/metric-card";
 import { SelectInput } from "@/components/ui/scenario-input";
 import { useMarketData } from "@/components/use-market-data";
-import { analyseCompetitorRates, formatPercent } from "@/lib/depositiq/prototype";
+import {
+  analyseCompetitorRates,
+  formatPercent,
+  getSimplificationOpportunity
+} from "@/lib/depositiq/prototype";
 
 export function ProductComplexityWorkbench() {
   const { data } = useMarketData("live");
@@ -49,6 +53,7 @@ export function ProductComplexityWorkbench() {
         <SelectInput value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}>
           <option>All</option>
           <option>Savings</option>
+          <option>Transaction</option>
           <option>Term Deposit</option>
         </SelectInput>
       </FilterBar>
@@ -102,12 +107,22 @@ export function ProductComplexityWorkbench() {
                   {row.comprehensionRisk}
                 </Badge>
               )
+            },
+            {
+              key: "opportunity",
+              label: "Suggested simplification opportunity",
+              render: (row: (typeof filteredRows)[number]) => getSimplificationOpportunity(row)
             }
           ]}
           rows={filteredRows}
         />
 
         <div className="space-y-6">
+          <InsightPanel title="Why this matters">
+            Product teams should not assume the product with the highest rate is the one
+            customers trust most. Complexity can weaken both conversion and retention.
+          </InsightPanel>
+
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-lg font-semibold text-slate-950">Headline rate vs simplicity</p>
             <div className="mt-5 space-y-4">

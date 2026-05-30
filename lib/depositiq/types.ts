@@ -2,7 +2,7 @@ export type CompetitorDepositRate = {
   bank: string;
   brandName: string;
   productName: string;
-  category: "Savings" | "Term Deposit";
+  category: "Savings" | "Transaction" | "Term Deposit";
   headlineRate: number;
   baseRate?: number;
   bonusRate?: number;
@@ -10,6 +10,7 @@ export type CompetitorDepositRate = {
   minBalance?: number;
   maxBalance?: number;
   conditionsSummary?: string;
+  feesSummary?: string;
   rateType?: string;
   lastUpdated?: string;
   source: "CDR" | "Fallback";
